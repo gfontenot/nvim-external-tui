@@ -1,6 +1,19 @@
 # nvim-external-tui
 
-A Neovim plugin for seamlessly integrating external TUI (Terminal User Interface) tools that can open files at specific line numbers.
+A Neovim plugin that allows you to seamlessly integrate external TUIs (for
+example, an application like [scooter](https://github.com/thomasschafer/scooter)) that can be launched from Neovim
+and then re-use the original Neovim instance for editing.
+
+## Why?
+
+There are a number of tools that have support for configuring external editor
+commands, but they don't all need to have dedicated Neovim plugins. Tools like
+[yazi](https://github.com/sxyazi/yazi) and [lazygit](https://github.com/jesseduffield/lazygit) have enough community support (and additional
+feature requirements) that make it reasonable to have a dedicated plugin to
+support their integration, but we don't always need/want that level of
+integration from our tools. Often just being able to configure the external
+editor (and adding a command to launch the tool) is more than enough. That's
+where nvim-external-tui comes in.
 
 ## Features
 
@@ -45,46 +58,86 @@ use {
 
 ### Basic Example
 
+Assume you have a tool named `neatui` that does neat things in a tui, and
+allows you to launch an editor to perform manual tasks. It has the following
+API:
+
+```
+❯ neatui --help
+Usage: neatui [OPTIONS]
+
+Options:
+      --editor <EDITOR>             Command to use when launching external editor
+      --prefill-text <SEARCH_TEXT>  Text to prefill a field that will be used to do neat things
+  -h, --help                        Print help
+  -V, --version                     Print version
+```
+
+To integrate this tool into Neovim yourself, you'd need to maintain a number
+of custom configuration pieces:
+
+1. A user command that is able to launch a terminal for this command
+   (including support for ranges and arguments to prefill text)
+2. The code required to present that terminal (including state tracking in
+   order to be able to dismiss the terminal when finished)
+3. The editor command to call back into Neovim using `--remote-send`
+
+This isn't an _overwhelming_ amount of configuration, but if you start to add
+multiple tools that need this kind of configuration it can get out of hand
+quickly. However, with nvim-external-tui, integration looks like this:
+
 ```lua
 local external_tui = require('external-tui')
 
 local config = external_tui.add({
-  user_cmd = 'Scooter',      -- Creates :Scooter command
-  cmd = 'scooter',            -- External command to run
-  text_arg = '--search-text', -- Flag for passing search text
+  user_cmd = 'Neatui',         -- Creates :Neatui command
+  cmd = 'neatui',              -- External command to run
+  text_arg = '--prefill-text', -- Flag to pass selected/input text to the command
+  editor_command = '--editor', -- Flag for configuring the external editor
 })
 ```
 
-This creates a `:Scooter` command that:
+This creates a `:Neatui` command that:
+- Launches a floating window running the `neatui` application
 - Accepts visual selection: `:'<,'>Scooter`
 - Accepts arguments: `:Scooter search_term`
 - Opens without arguments: `:Scooter`
+- Re-uses the original Neovim instance when performing editor actions
 
 ### Getting the Editor Command
 
-The `add()` function returns a table with the editor command that needs to be configured in your external tool:
+If your command doesn't support overriding the editor command via the cli and
+instead requires it to be specified in an external config, you can still use
+this plugin and it can still help you configure the bidirectional support. The
+`add()` function returns a table with the editor command that needs to be
+configured in your external tool. This table can be used to print out the
+commands you need to add to your external config in order to get the
+integration working:
 
 ```lua
 local config = external_tui.add({ ... })
 
 print(config.editor_command)
--- Output: nvim --server $NVIM --remote-send '<cmd>lua EditLineFromScooter("%file", %line)<CR>'
+-- Output: nvim --server $NVIM --remote-send '<cmd>lua EditLineFromNeatui("%file", %line)<CR>'
 print(config.callback_name)
--- Output: EditLineFromScooter
+-- Output: EditLineFromNeatui
 ```
 
-### Advanced Example with Hooks
+### Advanced Usage
+
+nvim-external-tui also supports optional pre/post launch hooks that you can
+use to perform actions automatically:
 
 ```lua
 external_tui.add({
-  user_cmd = 'Indextui',
-  cmd = 'indextui',
-  text_arg = '--search-text',
-  editor_flag = '--editor',  -- Tool supports passing editor command directly
+  user_cmd = 'Neatui',
+  cmd = 'neatui',
+  text_arg = '--prefill-text',
+  editor_flag = '--editor',
 
   -- Called before launching the TUI
-  pre_launch = function(search_text)
-    print("Launching with search:", search_text)
+  pre_launch = function(text)
+    print("Launching with text:", text)
     vim.cmd('write') -- Save current buffer
   end,
 
@@ -120,36 +173,6 @@ Table with:
 - `editor_command`: String to configure in external tool
 - `callback_name`: Name of the generated callback function
 
-## Configuring External Tools
-
-After registering a tool in Neovim, you need to configure the external tool to call back to Neovim when a file is selected.
-
-### Example: Scooter
-
-In `~/.config/scooter/config.toml`:
-
-```toml
-[editor_open]
-command = "nvim --server $NVIM --remote-send '<cmd>lua EditLineFromScooter(\"%file\", %line)<CR>'"
-```
-
-### Example: Indextui with Editor Flag
-
-If your tool supports passing the editor command as a flag (using `editor_flag` option), the plugin automatically includes it in the command:
-
-```lua
-external_tui.add({
-  user_cmd = 'Indextui',
-  cmd = 'indextui',
-  editor_flag = '--editor',
-})
-```
-
-This automatically passes the editor command when launching:
-```bash
-indextui --editor='nvim --server $NVIM --remote-send ...'
-```
-
 ### Template Variables
 
 The editor command uses template variables that the external tool should replace:
@@ -158,19 +181,7 @@ The editor command uses template variables that the external tool should replace
 
 These defaults can be overridden by passing the `file_format` and `line_format` options.
 
-## How It Works
-
-1. User invokes command (e.g., `:Scooter` or `:'<,'>Scooter`)
-2. Optional pre-launch hook runs
-3. Plugin launches external TUI in a floating terminal
-4. User selects a file to edit in the TUI
-5. TUI calls back to Neovim using `nvim --remote-send`
-6. Plugin closes terminal and opens the file at the specified line
-7. Optional post-callback hook runs
-
-## Examples
-
-### [Scooter](https://github.com/thomasschafer/scooter)
+## Example Config: [scooter](https://github.com/thomasschafer/scooter)
 ```lua
 local external_tui = require('external-tui')
 
@@ -187,37 +198,15 @@ Then configure the editor command for scooter in `~/.config/scooter/config.toml`
 command = "nvim --server $NVIM --remote-send '<cmd>lua EditLineFromScooter(\"%file\", %line)<CR>'"
 ```
 
-### Indextui Integration with Auto-save
-
-```lua
-external_tui.add({
-  user_cmd = 'Indextui',
-  cmd = 'indextui',
-  text_arg = '--search-text',
-  editor_flag = '--editor',
-  file_format = '{file}',
-  line_format = '{line}',
-
-  pre_launch = function(search_text)
-    -- Save all modified buffers before launching
-    vim.cmd('wall')
-  end,
-
-  post_callback = function(file_path, line)
-    -- Center the line and highlight it briefly
-    vim.cmd('normal! zz')
-    vim.defer_fn(function()
-      vim.cmd('normal! zvzz')
-    end, 100)
-  end,
-})
-```
-
 ## Requirements
 
 - Neovim >= 0.9.0
 - [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal management
 
-## Related Projects
+## Acknowledgements
 
-- [scooter](https://github.com/gfontenot/scooter) - A fuzzy file and content searcher. The neovim integration for Scooter was the inspiration for this plugin.
+This plugin is heavily inspired by the Neovim integration for
+[scooter](https://github.com/thomasschafer/scooter), as evidenced by the heavy use of that tool in the examples.
+The original code used for this plugin is a modified version of the sample
+code in that project, generalized for arbitrary tool usage and wrapped up in
+a plugin format.
