@@ -34,6 +34,60 @@ local function generate_editor_command(callback_name, file_format, line_format)
   )
 end
 
+-- NOTE: I think i good feature when user can custom the floating window
+-- Open terminal in floating window
+local function open_floating_terminal(cmd)
+  local width = math.floor(vim.o.columns * 0.8)
+  local height = math.floor(vim.o.lines * 0.8)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = 'editor',
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = 'minimal',
+    border = 'rounded',
+  })
+
+  vim.api.nvim_set_option_value('winhl', 'Normal:Normal', { win = win })
+
+  ---@diagnostic disable-next-line: deprecated
+  -- Start terminal in the buffer
+  vim.fn.termopen(cmd, { -- deprecated but okay
+    on_exit = function()
+      -- Mark terminal as closed when it exits
+      for k, term_data in pairs(terminals) do
+        if term_data.buf == buf then
+          terminals[k].closed = true
+          break
+        end
+      end
+    end,
+  })
+
+  -- Enter terminal mode
+  vim.cmd('startinsert')
+
+  return {
+    buf = buf,
+    win = win,
+    closed = false,
+    toggle = function(self)
+      if vim.api.nvim_win_is_valid(self.win) then
+        vim.api.nvim_win_close(self.win, true)
+      end
+      if vim.api.nvim_buf_is_valid(self.buf) then
+        vim.api.nvim_buf_delete(self.buf, { force = true })
+      end
+      self.closed = true
+    end,
+  }
+end
+
 -- Add a new external TUI tool integration
 function M.add(opts)
   -- Validate required options
@@ -86,8 +140,10 @@ function M.add(opts)
       launch_cmd = launch_cmd .. ' ' .. text_arg .. ' ' .. escaped_text
     end
 
-    -- Open terminal and store reference
-    terminals[user_cmd] = require('snacks').terminal.open(launch_cmd, { win = { style = 'float' } })
+    -- Open terminal in floating window and store reference
+    -- NOTE: No more snacks just use external neovim floeating window
+    -- see: https://youtu.be/5PIiKDES_wc?si=QncNmwbXJP2lZKhs
+    terminals[user_cmd] = open_floating_terminal(launch_cmd)
   end
 
   -- Register the global callback function
