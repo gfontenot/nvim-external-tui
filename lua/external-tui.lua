@@ -129,4 +129,11 @@ function M.add(opts)
   }
 end
 
+-- Expose private functions for testing
+M._private = {
+  get_visual_selection = get_visual_selection,
+  generate_callback_name = generate_callback_name,
+  generate_editor_command = generate_editor_command,
+}
+
 return M
