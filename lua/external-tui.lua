@@ -40,9 +40,15 @@ function M.add(opts)
   assert(opts.user_cmd, 'user_cmd is required')
   assert(opts.cmd, 'cmd is required')
 
+  -- Handle deprecated text_arg option
+  if opts.text_arg then
+    vim.deprecate('text_arg', 'text_flag', '1.0', 'external-tui', false)
+    opts.text_flag = opts.text_flag or opts.text_arg
+  end
+
   local user_cmd = opts.user_cmd
   local cmd = opts.cmd
-  local text_arg = opts.text_arg
+  local text_flag = opts.text_flag
   local editor_flag = opts.editor_flag
   local file_format = opts.file_format or '%file'
   local line_format = opts.line_format or '%line'
@@ -80,10 +86,10 @@ function M.add(opts)
 
     -- Build command with search text if provided
     local launch_cmd = full_cmd
-    if search_text and text_arg then
+    if search_text and text_flag then
       -- Escape the search text for shell
       local escaped_text = vim.fn.shellescape(search_text)
-      launch_cmd = launch_cmd .. ' ' .. text_arg .. ' ' .. escaped_text
+      launch_cmd = launch_cmd .. ' ' .. text_flag .. ' ' .. escaped_text
     end
 
     -- Open terminal and store reference

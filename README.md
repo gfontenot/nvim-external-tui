@@ -90,10 +90,10 @@ quickly. However, with nvim-external-tui, integration looks like this:
 local external_tui = require('external-tui')
 
 local config = external_tui.add({
-  user_cmd = 'Neatui',         -- Creates :Neatui command
-  cmd = 'neatui',              -- External command to run
-  text_arg = '--prefill-text', -- Flag to pass selected/input text to the command
-  editor_command = '--editor', -- Flag for configuring the external editor
+  user_cmd = 'Neatui',          -- Creates :Neatui command
+  cmd = 'neatui',               -- External command to run
+  text_flag = '--prefill-text', -- Flag to pass selected/input text to the command
+  editor_command = '--editor',  -- Flag for configuring the external editor
 })
 ```
 
@@ -132,7 +132,7 @@ use to perform actions automatically:
 external_tui.add({
   user_cmd = 'Neatui',
   cmd = 'neatui',
-  text_arg = '--prefill-text',
+  text_flag = '--prefill-text',
   editor_flag = '--editor',
 
   -- Called before launching the TUI
@@ -160,7 +160,7 @@ Register a new external TUI tool integration.
 |--------|------|----------|---------|-------------|
 | `user_cmd` | `string` | Yes | - | Neovim command name (e.g., 'Scooter' creates `:Scooter`) |
 | `cmd` | `string` | Yes | - | External command to execute (e.g., 'scooter') |
-| `text_arg` | `string` | No | `nil` | Flag for passing search text (e.g., '--search-text') |
+| `text_flag` | `string` | No | `nil` | Flag for passing selected text (e.g., '--search-text') |
 | `editor_flag` | `string` | No | `nil` | Flag for passing editor command (e.g., '--editor') |
 | `file_format` | `string` | No | `'%file'` | Template variable for file path in tool's config |
 | `line_format` | `string` | No | `'%line'` | Template variable for line number in tool's config |
@@ -188,7 +188,7 @@ local external_tui = require('external-tui')
 external_tui.add({
   user_cmd = 'Scooter',
   cmd = 'scooter',
-  text_arg = '--search-text',
+  text_flag = '--search-text',
   editor_flag = '--editor-command',
 })
 ```
