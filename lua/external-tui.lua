@@ -1,7 +1,20 @@
 local M = {}
 
+-- Plugin configuration
+local config = {
+  terminal_provider = nil, -- nil = auto-detect, 'snacks', or 'builtin'
+}
+
 -- Store terminal references for each registered tool
 local terminals = {}
+
+-- Configure the plugin
+function M.setup(opts)
+  opts = opts or {}
+  if opts.terminal_provider then
+    config.terminal_provider = opts.terminal_provider
+  end
+end
 
 -- Extract text from visual selection
 local function get_visual_selection()
@@ -93,7 +106,9 @@ function M.add(opts)
     end
 
     -- Open terminal and store reference
-    terminals[user_cmd] = require('external-tui.terminal').open(launch_cmd)
+    terminals[user_cmd] = require('external-tui.terminal').open(launch_cmd, {
+      provider = config.terminal_provider,
+    })
   end
 
   -- Register the global callback function

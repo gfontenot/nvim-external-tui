@@ -54,6 +54,24 @@ use {
 }
 ```
 
+## Configuration
+
+The plugin works out of the box with no configuration required. If you want to
+explicitly set the terminal provider, you can use the `setup` function:
+
+```lua
+require('external-tui').setup({
+  terminal_provider = 'builtin', -- 'snacks' | 'builtin' | nil (auto-detect)
+})
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `terminal_provider` | `string?` | `nil` | Terminal backend: `'snacks'`, `'builtin'`, or `nil` for auto-detection |
+
+When set to `nil` (the default), the plugin will use snacks.nvim if available,
+otherwise it falls back to the builtin floating terminal.
+
 ## Usage
 
 ### Basic Example

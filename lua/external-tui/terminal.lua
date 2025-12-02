@@ -51,19 +51,39 @@ local function open_builtin_terminal(cmd)
   return term
 end
 
--- Open terminal using best available backend
-function M.open(cmd)
-  if has_snacks then
-    local term = snacks.terminal.open(cmd, { win = { style = 'float' } })
-    return {
-      closed = term.closed,
-      close = function(self)
-        term:toggle()
-        self.closed = true
-      end,
-    }
-  else
+-- Open terminal using snacks.nvim
+local function open_snacks_terminal(cmd)
+  local term = snacks.terminal.open(cmd, { win = { style = 'float' } })
+  return {
+    closed = term.closed,
+    close = function(self)
+      term:toggle()
+      self.closed = true
+    end,
+  }
+end
+
+-- Open terminal using specified or auto-detected backend
+function M.open(cmd, opts)
+  opts = opts or {}
+  local provider = opts.provider
+
+  if provider == 'snacks' then
+    if has_snacks then
+      return open_snacks_terminal(cmd)
+    else
+      vim.notify('external-tui: snacks.nvim not available, falling back to builtin terminal', vim.log.levels.WARN)
+      return open_builtin_terminal(cmd)
+    end
+  elseif provider == 'builtin' then
     return open_builtin_terminal(cmd)
+  else
+    -- Auto-detect (default behavior)
+    if has_snacks then
+      return open_snacks_terminal(cmd)
+    else
+      return open_builtin_terminal(cmd)
+    end
   end
 end
 
