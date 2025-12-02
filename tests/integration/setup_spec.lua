@@ -44,6 +44,73 @@ describe('M.setup', function()
       external_tui.setup({ terminal_provider = 'builtin' })
     end)
   end)
+
+  it('accepts table-format terminal_provider with snacks config', function()
+    assert.has_no_error(function()
+      external_tui.setup({
+        terminal_provider = {
+          snacks = { win = { style = 'float' } },
+        },
+      })
+    end)
+  end)
+
+  it('accepts table-format terminal_provider with builtin config', function()
+    assert.has_no_error(function()
+      external_tui.setup({
+        terminal_provider = {
+          builtin = { width = 0.9, height = 0.9 },
+        },
+      })
+    end)
+  end)
+end)
+
+describe('normalize_terminal_provider', function()
+  local external_tui
+
+  before_each(function()
+    package.loaded['external-tui'] = nil
+    external_tui = require('external-tui')
+  end)
+
+  after_each(function()
+    package.loaded['external-tui'] = nil
+  end)
+
+  local normalize = function(provider)
+    return external_tui._private.normalize_terminal_provider(provider)
+  end
+
+  it('returns nil name and empty config for nil input', function()
+    local result = normalize(nil)
+    assert.is_nil(result.name)
+    assert.are.same({}, result.config)
+  end)
+
+  it('returns string name and empty config for string input', function()
+    local result = normalize('snacks')
+    assert.are.equal('snacks', result.name)
+    assert.are.same({}, result.config)
+  end)
+
+  it('extracts snacks name and config from table', function()
+    local result = normalize({ snacks = { win = { style = 'float' } } })
+    assert.are.equal('snacks', result.name)
+    assert.are.same({ win = { style = 'float' } }, result.config)
+  end)
+
+  it('extracts builtin name and config from table', function()
+    local result = normalize({ builtin = { width = 0.9 } })
+    assert.are.equal('builtin', result.name)
+    assert.are.same({ width = 0.9 }, result.config)
+  end)
+
+  it('returns nil name for empty table', function()
+    local result = normalize({})
+    assert.is_nil(result.name)
+    assert.are.same({}, result.config)
+  end)
 end)
 
 describe('terminal provider selection', function()

@@ -67,10 +67,54 @@ require('external-tui').setup({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `terminal_provider` | `string?` | `nil` | Terminal backend: `'snacks'`, `'builtin'`, or `nil` for auto-detection |
+| `terminal_provider` | `string` or `table` | `nil` | Terminal backend: `'snacks'`, `'builtin'`, `nil` for auto-detection, or a table with provider-specific config |
 
 When set to `nil` (the default), the plugin will use snacks.nvim if available,
 otherwise it falls back to the builtin floating terminal.
+
+### Advanced Terminal Configuration
+
+You can pass provider-specific configuration by using a table format:
+
+```lua
+-- Snacks with custom window config
+require('external-tui').setup({
+  terminal_provider = {
+    snacks = {
+      win = { style = 'float', position = 'bottom' }
+    }
+  }
+})
+
+-- Builtin with custom dimensions
+require('external-tui').setup({
+  terminal_provider = {
+    builtin = {
+      width = 0.9,
+      height = 0.9,
+      border = 'single',
+      style = 'minimal',
+    }
+  }
+})
+```
+
+The presence of the `snacks` or `builtin` key determines which provider to use,
+and its value completely replaces the default configuration.
+
+For Snacks configuration options, see the
+[Snacks terminal documentation](https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md).
+
+The builtin provider supports a limited set of options:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `width` | `number` | `0.8` | Window width as percentage of editor (0.0-1.0) |
+| `height` | `number` | `0.8` | Window height as percentage of editor (0.0-1.0) |
+| `border` | `string` | `'rounded'` | Border style (see `:help nvim_open_win`) |
+| `style` | `string` | `'minimal'` | Window style (see `:help nvim_open_win`) |
+
+For more advanced terminal configuration, consider using Snacks.
 
 ## Usage
 

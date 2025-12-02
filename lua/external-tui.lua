@@ -2,8 +2,24 @@ local M = {}
 
 -- Plugin configuration
 local config = {
-  terminal_provider = nil, -- nil = auto-detect, 'snacks', or 'builtin'
+  terminal_provider = nil, -- string ('snacks'|'builtin') or table ({ snacks = {...} } | { builtin = {...} })
 }
+
+-- Normalize terminal_provider to { name, config } format
+local function normalize_terminal_provider(provider)
+  if provider == nil then
+    return { name = nil, config = {} }
+  elseif type(provider) == 'string' then
+    return { name = provider, config = {} }
+  elseif type(provider) == 'table' then
+    if provider.snacks then
+      return { name = 'snacks', config = provider.snacks }
+    elseif provider.builtin then
+      return { name = 'builtin', config = provider.builtin }
+    end
+  end
+  return { name = nil, config = {} }
+end
 
 -- Store terminal references for each registered tool
 local terminals = {}
@@ -106,8 +122,10 @@ function M.add(opts)
     end
 
     -- Open terminal and store reference
+    local provider_opts = normalize_terminal_provider(config.terminal_provider)
     terminals[user_cmd] = require('external-tui.terminal').open(launch_cmd, {
-      provider = config.terminal_provider,
+      provider = provider_opts.name,
+      config = provider_opts.config,
     })
   end
 
@@ -155,6 +173,7 @@ M._private = {
   get_visual_selection = get_visual_selection,
   generate_callback_name = generate_callback_name,
   generate_editor_command = generate_editor_command,
+  normalize_terminal_provider = normalize_terminal_provider,
 }
 
 return M
