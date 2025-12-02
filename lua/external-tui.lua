@@ -1,3 +1,11 @@
+--@mod external-tui External TUI Integration
+---@brief [[
+---A Neovim plugin for integrating external TUI tools that support editor callbacks.
+---
+---This plugin simplifies integration of tools like scooter, allowing them to
+---launch from Neovim and call back into the same Neovim instance for editing.
+---@brief ]]
+
 local M = {}
 
 ---@class external-tui.AddOpts
@@ -19,9 +27,11 @@ local M = {}
 ---@field snacks? table Snacks terminal config @see https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md
 ---@field builtin? external-tui.BuiltinConfig Builtin terminal config
 
+---@tag external-tui.config
 ---@class external-tui.SetupOpts
 ---@field terminal_provider? 'snacks'|'builtin'|external-tui.TerminalProviderConfig
 
+---@private
 ---@class external-tui.NormalizedProvider
 ---@field name? 'snacks'|'builtin'
 ---@field config table
@@ -31,6 +41,7 @@ local config = {
   terminal_provider = nil, -- string ('snacks'|'builtin') or table ({ snacks = {...} } | { builtin = {...} })
 }
 
+---@private
 ---Normalize terminal_provider to { name, config } format
 ---@param provider? string|external-tui.TerminalProviderConfig
 ---@return external-tui.NormalizedProvider
@@ -52,8 +63,11 @@ end
 -- Store terminal references for each registered tool
 local terminals = {}
 
+---@tag external-tui.api
+
 ---Configure the plugin
 ---@param opts? external-tui.SetupOpts
+---@usage `require('external-tui').setup({ terminal_provider = 'builtin' })`
 function M.setup(opts)
   opts = opts or {}
   if opts.terminal_provider then
@@ -61,6 +75,7 @@ function M.setup(opts)
   end
 end
 
+---@private
 ---Extract text from visual selection
 ---@return string
 local function get_visual_selection()
@@ -75,6 +90,7 @@ local function get_visual_selection()
   return table.concat(lines, '\n')
 end
 
+---@private
 ---Generate callback function name from command name
 ---@param user_cmd string
 ---@return string
@@ -82,6 +98,7 @@ local function generate_callback_name(user_cmd)
   return 'EditLineFrom' .. user_cmd
 end
 
+---@private
 ---Generate the editor command string for the external tool's config
 ---@param callback_name string
 ---@param file_format? string
@@ -102,6 +119,7 @@ end
 ---Add a new external TUI tool integration
 ---@param opts external-tui.AddOpts
 ---@return external-tui.AddResult
+---@usage `require('external-tui').add({ user_cmd = 'Scooter', cmd = 'scooter' })`
 function M.add(opts)
   -- Validate required options
   assert(opts.user_cmd, 'user_cmd is required')

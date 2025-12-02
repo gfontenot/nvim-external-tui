@@ -1,0 +1,76 @@
+A Neovim plugin for integrating external TUI tools that support editor callbacks.
+
+This plugin simplifies integration of tools like scooter, allowing them to
+launch from Neovim and call back into the same Neovim instance for editing.
+
+external-tui.AddOpts                                      *external-tui.AddOpts*
+
+    Fields: ~
+        {user_cmd}      (string)  Neovim command name to create
+        {cmd}           (string)  External command to execute
+        {text_flag?}    (string)  Flag for passing selected text
+        {text_arg?}     (string)  @deprecated Use text_flag instead
+        {editor_flag?}  (string)  Flag for passing editor command
+        {file_format?}  (string)  Template for file path (default: '%file')
+        {line_format?}  (string)  Template for line number (default: '%line')
+        {pre_launch?}   (fun)
+
+
+external-tui.AddResult                                  *external-tui.AddResult*
+
+    Fields: ~
+        {editor_command}  (string)  Command string for external tool config
+        {callback_name}   (string)  Name of generated callback function
+
+
+external-tui.TerminalProviderConfig        *external-tui.TerminalProviderConfig*
+
+    Fields: ~
+        {snacks?}   (table)                       Snacks terminal config @see https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md
+        {builtin?}  (external-tui.BuiltinConfig)  Builtin terminal config
+
+
+                                                           *external-tui.config*
+external-tui.SetupOpts                                  *external-tui.SetupOpts*
+
+    Fields: ~
+        {terminal_provider?}  ("snacks"|"builtin"|external-tui.TerminalProviderConfig)
+
+
+external-tui.NormalizedProvider                *external-tui.NormalizedProvider*
+    @private
+
+    Fields: ~
+        {name?}   ("snacks"|"builtin")
+        {config}  (table)
+
+
+                                                              *external-tui.api*
+M.setup({opts?})                                                       *M.setup*
+    Configure the plugin
+
+    Parameters: ~
+        {opts?}  (external-tui.SetupOpts)
+
+    Usage: ~
+>lua
+        require('external-tui').setup({ terminal_provider = 'builtin' })
+<
+
+
+M.add({opts})                                                            *M.add*
+    Add a new external TUI tool integration
+
+    Parameters: ~
+        {opts}  (external-tui.AddOpts)
+
+    Returns: ~
+        (external-tui.AddResult)
+
+    Usage: ~
+>lua
+        require('external-tui').add({ user_cmd = 'Scooter', cmd = 'scooter' })
+<
+
+
+vim:tw=78:ts=8:noet:ft=help:norl:
