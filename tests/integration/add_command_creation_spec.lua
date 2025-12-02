@@ -10,6 +10,7 @@ describe('M.add command creation', function()
         end,
       },
     }
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
     external_tui = require('external-tui')
   end)
@@ -21,6 +22,7 @@ describe('M.add command creation', function()
     _G['EditLineFromTestCmd'] = nil
     _G['EditLineFromAnotherCmd'] = nil
     package.loaded['snacks'] = nil
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
   end)
 

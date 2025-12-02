@@ -10,12 +10,14 @@ describe('M.add validation', function()
         end,
       },
     }
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
     external_tui = require('external-tui')
   end)
 
   after_each(function()
     package.loaded['snacks'] = nil
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
   end)
 

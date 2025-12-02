@@ -93,7 +93,7 @@ function M.add(opts)
     end
 
     -- Open terminal and store reference
-    terminals[user_cmd] = require('snacks').terminal.open(launch_cmd, { win = { style = 'float' } })
+    terminals[user_cmd] = require('external-tui.terminal').open(launch_cmd)
   end
 
   -- Register the global callback function
@@ -101,7 +101,7 @@ function M.add(opts)
     -- Close the terminal if it's open
     local term = terminals[user_cmd]
     if term and not term.closed then
-      term:toggle()
+      term:close()
     end
 
     -- Check if file is already open to avoid redundant operations

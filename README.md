@@ -32,7 +32,7 @@ where nvim-external-tui comes in.
 {
   'gfontenot/nvim-external-tui',
   dependencies = {
-    'folke/snacks.nvim', -- Required for terminal management
+    'folke/snacks.nvim', -- Optional: provides enhanced terminal management
   },
   config = function()
     -- Your tool configurations here
@@ -46,7 +46,7 @@ where nvim-external-tui comes in.
 use {
   'gfontenot/nvim-external-tui',
   requires = {
-    'folke/snacks.nvim', -- Required for terminal management
+    'folke/snacks.nvim', -- Optional: provides enhanced terminal management
   },
   config = function()
     -- Your tool configurations here
@@ -205,7 +205,7 @@ command = "nvim --server $NVIM --remote-send '<cmd>lua EditLineFromScooter(\"%fi
 ## Requirements
 
 - Neovim >= 0.9.0
-- [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal management
+- [snacks.nvim](https://github.com/folke/snacks.nvim) (optional) - If installed, snacks.nvim will be used for terminal management. Otherwise, a builtin floating terminal is used.
 
 ## Acknowledgements
 

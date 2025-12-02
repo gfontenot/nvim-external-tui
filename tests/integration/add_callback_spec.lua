@@ -10,6 +10,7 @@ describe('M.add return value and callbacks', function()
         end,
       },
     }
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
     external_tui = require('external-tui')
   end)
@@ -21,6 +22,7 @@ describe('M.add return value and callbacks', function()
     pcall(vim.api.nvim_del_user_command, 'TestCmd')
     pcall(vim.api.nvim_del_user_command, 'Custom')
     package.loaded['snacks'] = nil
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
   end)
 
@@ -86,6 +88,7 @@ describe('callback function behavior', function()
         end,
       },
     }
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
     external_tui = require('external-tui')
   end)
@@ -94,6 +97,7 @@ describe('callback function behavior', function()
     _G['EditLineFromTestCmd'] = nil
     pcall(vim.api.nvim_del_user_command, 'TestCmd')
     package.loaded['snacks'] = nil
+    package.loaded['external-tui.terminal'] = nil
     package.loaded['external-tui'] = nil
   end)
 
