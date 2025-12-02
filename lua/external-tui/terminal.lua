@@ -4,9 +4,17 @@ local M = {}
 local has_snacks, snacks = pcall(require, 'snacks')
 
 -- Builtin floating terminal implementation
-local function open_builtin_terminal(cmd)
-  local width = math.floor(vim.o.columns * 0.8)
-  local height = math.floor(vim.o.lines * 0.8)
+local function open_builtin_terminal(cmd, user_config)
+  local default_config = {
+    width = 0.8,
+    height = 0.8,
+    border = 'rounded',
+    style = 'minimal',
+  }
+  local cfg = user_config or default_config
+
+  local width = math.floor(vim.o.columns * cfg.width)
+  local height = math.floor(vim.o.lines * cfg.height)
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
 
@@ -17,8 +25,8 @@ local function open_builtin_terminal(cmd)
     height = height,
     row = row,
     col = col,
-    style = 'minimal',
-    border = 'rounded',
+    style = cfg.style,
+    border = cfg.border,
   })
 
   vim.api.nvim_set_option_value('winhl', 'Normal:Normal', { win = win })
@@ -52,8 +60,10 @@ local function open_builtin_terminal(cmd)
 end
 
 -- Open terminal using snacks.nvim
-local function open_snacks_terminal(cmd)
-  local term = snacks.terminal.open(cmd, { win = { style = 'float' } })
+local function open_snacks_terminal(cmd, user_config)
+  local default_config = { win = { style = 'float' } }
+  local cfg = user_config or default_config
+  local term = snacks.terminal.open(cmd, cfg)
   return {
     closed = term.closed,
     close = function(self)
@@ -67,22 +77,23 @@ end
 function M.open(cmd, opts)
   opts = opts or {}
   local provider = opts.provider
+  local user_config = opts.config
 
   if provider == 'snacks' then
     if has_snacks then
-      return open_snacks_terminal(cmd)
+      return open_snacks_terminal(cmd, user_config)
     else
       vim.notify('external-tui: snacks.nvim not available, falling back to builtin terminal', vim.log.levels.WARN)
-      return open_builtin_terminal(cmd)
+      return open_builtin_terminal(cmd, user_config)
     end
   elseif provider == 'builtin' then
-    return open_builtin_terminal(cmd)
+    return open_builtin_terminal(cmd, user_config)
   else
     -- Auto-detect (default behavior)
     if has_snacks then
-      return open_snacks_terminal(cmd)
+      return open_snacks_terminal(cmd, user_config)
     else
-      return open_builtin_terminal(cmd)
+      return open_builtin_terminal(cmd, user_config)
     end
   end
 end
