@@ -112,7 +112,7 @@ function M.open(cmd, opts)
         'external-tui: snacks.nvim not available, falling back to builtin terminal',
         vim.log.levels.WARN
       )
-      return open_builtin_terminal(cmd, user_config)
+      return open_builtin_terminal(cmd, nil)
     end
   elseif provider == 'builtin' then
     return open_builtin_terminal(cmd, user_config)
