@@ -108,7 +108,10 @@ function M.open(cmd, opts)
     if has_snacks then
       return open_snacks_terminal(cmd, user_config)
     else
-      vim.notify('external-tui: snacks.nvim not available, falling back to builtin terminal', vim.log.levels.WARN)
+      vim.notify(
+        'external-tui: snacks.nvim not available, falling back to builtin terminal',
+        vim.log.levels.WARN
+      )
       return open_builtin_terminal(cmd, user_config)
     end
   elseif provider == 'builtin' then

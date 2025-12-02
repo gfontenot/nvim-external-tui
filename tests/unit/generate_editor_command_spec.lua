@@ -5,7 +5,7 @@ describe('generate_editor_command', function()
   it('generates command with default formats', function()
     local result = generate_editor_command('EditLineFromTest')
     assert.equals(
-      "nvim --server $NVIM --remote-send '<cmd>lua EditLineFromTest(\"%file\", %line)<CR>'",
+      'nvim --server $NVIM --remote-send \'<cmd>lua EditLineFromTest("%file", %line)<CR>\'',
       result
     )
   end)
@@ -19,7 +19,7 @@ describe('generate_editor_command', function()
   it('uses custom file_format', function()
     local result = generate_editor_command('MyCallback', '${file}', '%line')
     assert.equals(
-      "nvim --server $NVIM --remote-send '<cmd>lua MyCallback(\"${file}\", %line)<CR>'",
+      'nvim --server $NVIM --remote-send \'<cmd>lua MyCallback("${file}", %line)<CR>\'',
       result
     )
   end)
@@ -27,7 +27,7 @@ describe('generate_editor_command', function()
   it('uses custom line_format', function()
     local result = generate_editor_command('MyCallback', '%file', '${line}')
     assert.equals(
-      "nvim --server $NVIM --remote-send '<cmd>lua MyCallback(\"%file\", ${line})<CR>'",
+      'nvim --server $NVIM --remote-send \'<cmd>lua MyCallback("%file", ${line})<CR>\'',
       result
     )
   end)
@@ -35,7 +35,7 @@ describe('generate_editor_command', function()
   it('uses both custom formats', function()
     local result = generate_editor_command('MyCallback', '{{file}}', '{{line}}')
     assert.equals(
-      "nvim --server $NVIM --remote-send '<cmd>lua MyCallback(\"{{file}}\", {{line}})<CR>'",
+      'nvim --server $NVIM --remote-send \'<cmd>lua MyCallback("{{file}}", {{line}})<CR>\'',
       result
     )
   end)
