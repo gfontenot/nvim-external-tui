@@ -30,7 +30,7 @@ local function open_builtin_terminal(cmd, user_config)
     border = 'rounded',
     style = 'minimal',
   }
-  local cfg = user_config or default_config
+  local cfg = vim.tbl_deep_extend('force', default_config, user_config or {})
 
   local width = math.floor(vim.o.columns * cfg.width)
   local height = math.floor(vim.o.lines * cfg.height)
@@ -84,7 +84,7 @@ end
 ---@return external-tui.Terminal
 local function open_snacks_terminal(cmd, user_config)
   local default_config = { win = { style = 'float' } }
-  local cfg = user_config or default_config
+  local cfg = vim.tbl_deep_extend('force', default_config, user_config or {})
   local term = snacks.terminal.open(cmd, cfg)
   return {
     closed = term.closed,
