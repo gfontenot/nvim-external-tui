@@ -189,11 +189,15 @@ external_tui.add({
   user_cmd = 'Scooter',
   cmd = 'scooter',
   text_arg = '--search-text',
+  editor_flag = '--editor-command',
 })
 ```
 
-Then configure the editor command for scooter in `~/.config/scooter/config.toml`:
+For versions of Scooter before 0.8.4, you would need to omit the `editor_flag`
+option in the plugin config, and instead set the command in the Scooter config
+directly:
 ```toml
+# ~/.config/scooter/config.toml
 [editor_open]
 command = "nvim --server $NVIM --remote-send '<cmd>lua EditLineFromScooter(\"%file\", %line)<CR>'"
 ```
