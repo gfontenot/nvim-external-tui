@@ -86,13 +86,21 @@ local function open_snacks_terminal(cmd, user_config)
   local default_config = { win = { style = 'float' } }
   local cfg = vim.tbl_deep_extend('force', default_config, user_config or {})
   local term = snacks.terminal.open(cmd, cfg)
-  return {
-    closed = term.closed,
-    close = function(self)
-      term:toggle()
-      self.closed = true
+  local wrapper = {
+    close = function()
+      if not term.closed then
+        term:toggle()
+      end
     end,
   }
+  setmetatable(wrapper, {
+    __index = function(_, k)
+      if k == 'closed' then
+        return term.closed
+      end
+    end,
+  })
+  return wrapper
 end
 
 ---Open terminal using specified or auto-detected backend
