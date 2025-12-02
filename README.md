@@ -99,11 +99,13 @@ require('external-tui').setup({
 })
 ```
 
-The presence of the `snacks` or `builtin` key determines which provider to use,
-and its value completely replaces the default configuration.
+The presence of the `snacks` or `builtin` key determines which provider to
+use, and its value is merged with the default configuration. Unspecified
+fields fall back to their default values.
 
 For Snacks configuration options, see the
 [Snacks terminal documentation](https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md).
+The default Snacks config is `{ win = { style = 'float' } }`.
 
 The builtin provider supports a limited set of options:
 

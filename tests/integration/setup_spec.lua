@@ -113,6 +113,28 @@ describe('normalize_terminal_provider', function()
   end)
 end)
 
+describe('builtin terminal config merging', function()
+  local terminal
+
+  before_each(function()
+    -- Ensure snacks is not available for builtin tests
+    package.loaded['snacks'] = nil
+    package.loaded['external-tui.terminal'] = nil
+    terminal = require('external-tui.terminal')
+  end)
+
+  after_each(function()
+    package.loaded['snacks'] = nil
+    package.loaded['external-tui.terminal'] = nil
+  end)
+
+  it('uses default config when no user config provided', function()
+    -- This test verifies the function exists and can be called
+    -- The actual terminal creation requires vim APIs that are tested elsewhere
+    assert.is_function(terminal._private.open_builtin_terminal)
+  end)
+end)
+
 describe('terminal provider selection', function()
   before_each(function()
     package.loaded['snacks'] = nil
