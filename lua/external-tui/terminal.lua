@@ -1,9 +1,28 @@
 local M = {}
 
+---@class external-tui.BuiltinConfig
+---@field width? number Window width as percentage (0.0-1.0)
+---@field height? number Window height as percentage (0.0-1.0)
+---@field border? string Border style
+---@field style? string Window style
+
+---@class external-tui.Terminal
+---@field buf? integer Buffer handle (builtin only)
+---@field win? integer Window handle (builtin only)
+---@field closed boolean
+---@field close fun(self: external-tui.Terminal): nil
+
+---@class external-tui.TerminalOpenOpts
+---@field provider? 'snacks'|'builtin'
+---@field config? table Provider-specific config (snacks: @see https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md)
+
 -- Check if snacks.nvim is available
 local has_snacks, snacks = pcall(require, 'snacks')
 
--- Builtin floating terminal implementation
+---Builtin floating terminal implementation
+---@param cmd string
+---@param user_config? external-tui.BuiltinConfig
+---@return external-tui.Terminal
 local function open_builtin_terminal(cmd, user_config)
   local default_config = {
     width = 0.8,
@@ -59,7 +78,10 @@ local function open_builtin_terminal(cmd, user_config)
   return term
 end
 
--- Open terminal using snacks.nvim
+---Open terminal using snacks.nvim
+---@param cmd string
+---@param user_config? table @see https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md
+---@return external-tui.Terminal
 local function open_snacks_terminal(cmd, user_config)
   local default_config = { win = { style = 'float' } }
   local cfg = user_config or default_config
@@ -73,7 +95,10 @@ local function open_snacks_terminal(cmd, user_config)
   }
 end
 
--- Open terminal using specified or auto-detected backend
+---Open terminal using specified or auto-detected backend
+---@param cmd string
+---@param opts? external-tui.TerminalOpenOpts
+---@return external-tui.Terminal
 function M.open(cmd, opts)
   opts = opts or {}
   local provider = opts.provider

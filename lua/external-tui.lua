@@ -1,11 +1,39 @@
 local M = {}
 
+---@class external-tui.AddOpts
+---@field user_cmd string Neovim command name to create
+---@field cmd string External command to execute
+---@field text_flag? string Flag for passing selected text
+---@field text_arg? string @deprecated Use text_flag instead
+---@field editor_flag? string Flag for passing editor command
+---@field file_format? string Template for file path (default: '%file')
+---@field line_format? string Template for line number (default: '%line')
+---@field pre_launch? fun(text: string?): nil Called before launching TUI
+---@field post_callback? fun(file_path: string, line: integer): nil Called after file selection
+
+---@class external-tui.AddResult
+---@field editor_command string Command string for external tool config
+---@field callback_name string Name of generated callback function
+
+---@class external-tui.TerminalProviderConfig
+---@field snacks? table Snacks terminal config @see https://github.com/folke/snacks.nvim/blob/main/docs/terminal.md
+---@field builtin? external-tui.BuiltinConfig Builtin terminal config
+
+---@class external-tui.SetupOpts
+---@field terminal_provider? 'snacks'|'builtin'|external-tui.TerminalProviderConfig
+
+---@class external-tui.NormalizedProvider
+---@field name? 'snacks'|'builtin'
+---@field config table
+
 -- Plugin configuration
 local config = {
   terminal_provider = nil, -- string ('snacks'|'builtin') or table ({ snacks = {...} } | { builtin = {...} })
 }
 
--- Normalize terminal_provider to { name, config } format
+---Normalize terminal_provider to { name, config } format
+---@param provider? string|external-tui.TerminalProviderConfig
+---@return external-tui.NormalizedProvider
 local function normalize_terminal_provider(provider)
   if provider == nil then
     return { name = nil, config = {} }
@@ -24,7 +52,8 @@ end
 -- Store terminal references for each registered tool
 local terminals = {}
 
--- Configure the plugin
+---Configure the plugin
+---@param opts? external-tui.SetupOpts
 function M.setup(opts)
   opts = opts or {}
   if opts.terminal_provider then
@@ -32,7 +61,8 @@ function M.setup(opts)
   end
 end
 
--- Extract text from visual selection
+---Extract text from visual selection
+---@return string
 local function get_visual_selection()
   local start_pos = vim.fn.getpos("'<")
   local end_pos = vim.fn.getpos("'>")
@@ -45,12 +75,18 @@ local function get_visual_selection()
   return table.concat(lines, '\n')
 end
 
--- Generate callback function name from command name
+---Generate callback function name from command name
+---@param user_cmd string
+---@return string
 local function generate_callback_name(user_cmd)
   return 'EditLineFrom' .. user_cmd
 end
 
--- Generate the editor command string for the external tool's config
+---Generate the editor command string for the external tool's config
+---@param callback_name string
+---@param file_format? string
+---@param line_format? string
+---@return string
 local function generate_editor_command(callback_name, file_format, line_format)
   file_format = file_format or '%file'
   line_format = line_format or '%line'
@@ -63,7 +99,9 @@ local function generate_editor_command(callback_name, file_format, line_format)
   )
 end
 
--- Add a new external TUI tool integration
+---Add a new external TUI tool integration
+---@param opts external-tui.AddOpts
+---@return external-tui.AddResult
 function M.add(opts)
   -- Validate required options
   assert(opts.user_cmd, 'user_cmd is required')
